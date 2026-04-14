@@ -62,13 +62,12 @@ function drawGauge(canvasId, value, label) {
 }
 
 // giả lập 2 cảm biến
-let value1 = 0;
-let value2 = 0;
-
-setInterval(() => {
-    value1 = Math.random() * 1000; // bức xạ
-    value2 = Math.random() * 1000; // dữ liệu khác
-
+fetch("http://192.168.1.100/data")
+  .then(res => res.text())
+  .then(data => {
+      let value = parseFloat(data);
+      draw(value);
+  });
     drawGauge("gauge1", value1, "Bức xạ (W/m²)");
     drawGauge("gauge2", value2, "Kênh 2");
 }, 1000);
