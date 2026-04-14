@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Multi Gauge W/m²</title>
+    <style>
+        body {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gauge1" width="250" height="250"></canvas>
+<canvas id="gauge2" width="250" height="250"></canvas>
+
+<script>
+
+function drawGauge(canvasId, value, label) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, 250, 250);
+
+    const cx = 125;
+    const cy = 125;
+    const r = 90;
+
+    // vòng cung
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
+
+    if (value < 200) ctx.strokeStyle = "green";
+    else if (value < 600) ctx.strokeStyle = "orange";
+    else ctx.strokeStyle = "red";
+
+    ctx.lineWidth = 12;
+    ctx.stroke();
+
+    // kim
+    let angle = Math.PI + (value / 1000) * Math.PI;
+
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // text
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "black";
+    ctx.fillText(label, 80, 30);
+    ctx.fillText(value.toFixed(0), 110, 220);
+}
+
+// giả lập 2 cảm biến
+let value1 = 0;
+let value2 = 0;
+
+setInterval(() => {
+    value1 = Math.random() * 1000; // bức xạ
+    value2 = Math.random() * 1000; // dữ liệu khác
+
+    drawGauge("gauge1", value1, "Bức xạ (W/m²)");
+    drawGauge("gauge2", value2, "Kênh 2");
+}, 1000);
+
+</script>
+
+</body>
+</html>
