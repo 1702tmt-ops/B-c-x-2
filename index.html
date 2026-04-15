@@ -99,11 +99,38 @@
             gauge.set(newTemp / 100);
         }
 
-        // Mẫu dữ liệu test - thay thế bằng API lấy dữ liệu thực tế từ hệ thống E-Ra
-        setInterval(() => {
-            const mockTemp = 25 + Math.random() * 15;
-            updateTemperatureData(mockTemp);
-        }, 3000);
+        function fetchDataFromERa() {
+            // --- Bắt đầu phần logic kết nối E-Ra (GIẢ ĐỊNH CÁCH DỮ LIỆU ĐƯỢC TRUYỀN) ---
+            
+            let currentTemp = null;
+            const params = new URLSearchParams(window.location.search);
+            
+            // Giả định: Dữ liệu nhiệt độ được truyền qua tham số URL tên là 'temp'
+            if (params.has('temp')) {
+                currentTemp = parseFloat(params.get('temp'));
+            }
+            
+            // Hoặc, nếu E-Ra inject dữ liệu vào một biến toàn cục, bạn sẽ dùng:
+            // if (window.ERaData && window.ERaData.temperature) {
+            //     currentTemp = window.ERaData.temperature;
+            // }
+
+            // --- Kết thúc phần logic kết nối E-Ra ---
+            
+            if (currentTemp !== null && !isNaN(currentTemp)) {
+                updateTemperatureData(currentTemp);
+            } else {
+                // Nếu không nhận được dữ liệu từ E-Ra, quay lại giá trị mặc định/test
+                console.warn("Không tìm thấy dữ liệu nhiệt độ từ cấu hình E-Ra. Sử dụng giá trị mặc định.");
+                // Nếu cần, bạn có thể gọi lại hàm test ở đây.
+            }
+        }
+
+        // Gọi hàm này định kỳ để kiểm tra dữ liệu mới
+        setInterval(fetchDataFromERa, 5000); // Kiểm tra mỗi 5 giây
+
+        // Gọi lần đầu khi load
+        fetchDataFromERa();
 
         // Khởi tạo gauge
         gauge.maxValue = 100;
