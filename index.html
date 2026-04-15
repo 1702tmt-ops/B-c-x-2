@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gauge Nhiệt độ THREP</title></script></script>
+    <title>Gauge Nhiệt Độ THREP</title></script>
     <style>
         * {
             margin: 0;
@@ -23,119 +23,91 @@
         .gauge-title {
             font-size: 1.8rem;
             color: #212121;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-weight: 500;
         }
         #gauge-temperature {
-            width: 350px;
-            height: 350px;
-        }
-        .temp-value {
-            font-size: 3.2rem;
-            font-weight: 600;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -30%);
-            color: #2E7D32;
-        }
-        .temp-unit {
-            font-size: 1.2rem;
-            margin-left: 4px;
+            position: relative;
+            width: 380px;
+            height: 380px;
         }
     </style>
 </head>
 <body>
     <div class="temperature-gauge-container">
         <h2 class="gauge-title">Nhiệt độ</h2>
-            <div id="gauge-temperature"></div>
-            <div class="temp-value">
-                <span id="current-temp">29.9</span>
-                <span class="temp-unit">°C</span>
-            </div>
-        </div>
+        <div id="gauge-temperature"></div>
     </div>
 
     <script>
-        // Cấu hình gauge nhiệt độ
-        const gauge = new Gauge(document.getElementById('gauge-temperature')).setOptions({
-            angle: 0.15,
-            lineWidth: 0.4,
-            pointer: {
-                length: 0.6,
-                strokeWidth: 0.03,
-                color: '#000000'
-            },
-            limitMax: true,
-            colorStart: '#4CAF50', // Xanh lá cho ngưỡng thấp
-            colorMedium: '#FFC107', // Vàng cho ngưỡng trung bình
-            colorStop: '#F44336',  // Đỏ cho ngưỡng cao
-            strokeColor: '#E0E0E0',
-            generateGradient: true,
-            percentColors: [
-                [0.0, "#4CAF50"],
-                [0.5, "#FFC107"],
-                [1.0, "#F44336"]
+        // --- Khởi tạo biểu đồ gauge với kim và 3 ngưỡng màu ---
+        const tempGauge = new JustGage({
+            id: "gauge-temperature",
+            value: 0,
+            min: 0,
+            max: 100,
+            title: "",
+            label: "°C",
+            levelColors: [
+                "#4CAF50", // Xanh lá: 0 → 25°C
+                "#FFC107", // Vàng: 25 → 35°C
+                "#F44336"  // Đỏ: >35°C
             ],
-            maxValue: 100,
-            minorTicks: 5
+            levelColorsGradient: false,
+            showInnerShadow: true,
+            pointer: true,
+            pointerOptions: {
+                strokeWidth: 4,
+                color: "#000000"
+            },
+            showPercentage: false,
+            showValues: true,
+            valueFontColor: "#212121",
+            customSectors: [{
+                color: "#4CAF50",
+                lo: 0,
+                hi: 25
+            }, {
+                color: "#FFC107",
+                lo: 25,
+                hi: 35
+            }, {
+                color: "#F44336",
+                lo: 35,
+                hi: 100
+            }],
+            gaugeWidthScale: 0.6
         });
 
-        // Cập nhật dữ liệu nhiệt độ realtime
-        function updateTemperatureData(newTemp) {
-            // Cập nhật giá trị hiển thị
-            document.getElementById('current-temp').textContent = newTemp.toFixed(1);
-            
-            // Thay đổi màu sắc theo ngưỡng
-            if(newTemp < 25) {
-                document.querySelector('.temp-value').style.color = '#4CAF50';
-            } else if(newTemp < 35) {
-                document.querySelector('.temp-value').style.color = '#FFC107';
-            } else {
-                document.querySelector('.temp-value').style.color = '#F44336';
-            }
+        // --- Cập nhật dữ liệu nhiệt độ thực tế từ hệ thống E-Ra ---
+        function updateTemperatureData() {
+            let realTemp = null;
 
-            // Cập nhật gauge
-            gauge.set(newTemp / 100);
-        }
+            // 👉 Cách 1: Lấy dữ liệu từ tham số URL (nếu E-Ra truyền qua ?temp=giá_trị)
+          //  const urlParams = new URLSearchParams(window.location.search);
+         //   if(urlParams.has('temp')) {
+           //     realTemp = parseFloat(urlParams.get('temp'));
+          //  }
 
-        function fetchDataFromERa() {
-            // --- Bắt đầu phần logic kết nối E-Ra (GIẢ ĐỊNH CÁCH DỮ LIỆU ĐƯỢC TRUYỀN) ---
-            
-            let currentTemp = null;
-            const params = new URLSearchParams(window.location.search);
-            
-            // Giả định: Dữ liệu nhiệt độ được truyền qua tham số URL tên là 'temp'
-            if (params.has('temp')) {
-                currentTemp = parseFloat(params.get('temp'));
-            }
-            
-            // Hoặc, nếu E-Ra inject dữ liệu vào một biến toàn cục, bạn sẽ dùng:
-            // if (window.ERaData && window.ERaData.temperature) {
-            //     currentTemp = window.ERaData.temperature;
+            // 👉 Cách 2: Lấy dữ liệu từ biến toàn cục do E-Ra inject (nếu bạn không dùng tham số URL)
+            // if(window.ERaDashboard && window.ERaDashboard.currentTemperature) {
+            //     realTemp = window.ERaDashboard.currentTemperature;
             // }
 
-            // --- Kết thúc phần logic kết nối E-Ra ---
-            
-            if (currentTemp !== null && !isNaN(currentTemp)) {
-                updateTemperatureData(currentTemp);
+            // Cập nhật biểu đồ nếu có dữ liệu hợp lệ
+            if(realTemp !== null && !isNaN(realTemp) && realTemp >=0 && realTemp <=100) {
+                tempGauge.refresh(realTemp);
             } else {
-                // Nếu không nhận được dữ liệu từ E-Ra, quay lại giá trị mặc định/test
-                console.warn("Không tìm thấy dữ liệu nhiệt độ từ cấu hình E-Ra. Sử dụng giá trị mặc định.");
-                // Nếu cần, bạn có thể gọi lại hàm test ở đây.
+                // Sử dụng giá trị mặc định nếu không nhận được dữ liệu
+                tempGauge.refresh(29.9);
             }
         }
 
-        // Gọi hàm này định kỳ để kiểm tra dữ liệu mới
-        setInterval(fetchDataFromERa, 5000); // Kiểm tra mỗi 5 giây
+        // Tự động cập nhật dữ liệu mỗi 3 giây theo yêu cầu thực tế
+        setInterval(updateTemperatureData, 3000);
 
-        // Gọi lần đầu khi load
-        fetchDataFromERa();
-
-        // Khởi tạo gauge
-        gauge.maxValue = 100;
-        gauge.setMinValue(0);
-        gauge.set(0.299);
+        // Khởi tạo lần đầu khi load trang
+        updateTemperatureData();
     </script>
 </body>
 </html>
