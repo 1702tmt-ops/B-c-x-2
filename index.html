@@ -84,10 +84,10 @@
             let realTemp = null;
 
             // 👉 Cách 1: Lấy dữ liệu từ tham số URL (nếu E-Ra truyền qua ?temp=giá_trị)
-          //  const urlParams = new URLSearchParams(window.location.search);
-         //   if(urlParams.has('temp')) {
-           //     realTemp = parseFloat(urlParams.get('temp'));
-          //  }
+           const urlParams = new URLSearchParams(window.location.search);
+           if(urlParams.has('temp')) {
+               realTemp = parseFloat(urlParams.get('temp'));
+            }
 
             // 👉 Cách 2: Lấy dữ liệu từ biến toàn cục do E-Ra inject (nếu bạn không dùng tham số URL)
             // if(window.ERaDashboard && window.ERaDashboard.currentTemperature) {
@@ -95,12 +95,12 @@
             // }
 
             // Cập nhật biểu đồ nếu có dữ liệu hợp lệ
-            if(realTemp !== null && !isNaN(realTemp) && realTemp >=0 && realTemp <=100) {
-                tempGauge.refresh(realTemp);
-            } else {
+            //if(realTemp !== null && !isNaN(realTemp) && realTemp >=0 && realTemp <=100) {
+            //    tempGauge.refresh(realTemp);
+           // } else {
                 // Sử dụng giá trị mặc định nếu không nhận được dữ liệu
-                tempGauge.refresh(29.9);
-            }
+            //    tempGauge.refresh(29.9);
+         //   }
         }
 
         // Tự động cập nhật dữ liệu mỗi 3 giây theo yêu cầu thực tế
